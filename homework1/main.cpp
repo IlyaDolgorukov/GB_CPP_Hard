@@ -5,6 +5,8 @@
 #include <tuple>
 #include <vector>
 #include <fstream>
+#include <algorithm>
+#include <iomanip>
 
 using namespace std;
 
@@ -26,7 +28,7 @@ public:
 ostream &operator<< (ostream &os, const Person &pers)
 {
 	string middlename = pers.middlename.has_value() ? pers.middlename.value() : " ";
-	return os << pers.lastname << "\t" << pers.firstname << "\t" << middlename;
+	return os << setiosflags(ios::left) << setw(15) << pers.lastname << setw(14) << pers.firstname << setw(14) << middlename;
 }
 
 bool operator< (const Person &p1, const Person &p2)
@@ -68,44 +70,73 @@ class PhoneBook
 {
 private:
 	vector<pair<Person, PhoneNumber>> contacts;
+
+	vector<string> splitString (const string& s)
+	{
+	    vector<string> result;
+	    size_t space_pos = 0;
+
+	    while (true) {
+	        size_t pos = s.find(' ', space_pos);
+	        if (pos == s.npos){
+	            result.push_back(s.substr(space_pos, s.size() - space_pos));
+	            break;
+	        }
+	        result.push_back(s.substr(space_pos, pos - space_pos));
+	        space_pos = pos + 1;
+	    }
+
+	    return result;
+	}
+
+	Person getPerson(string lastname, string firstname, string middlename)
+	{
+		return middlename == "-"
+			? Person {lastname, firstname}
+			: Person {lastname, firstname, middlename};
+	}
+
+	PhoneNumber getPhoneNumber(string country, string city, string number, string additional)
+	{ 
+		return additional == "-"
+			? PhoneNumber {stoi(country), stoi(city), number}
+			: PhoneNumber {stoi(country), stoi(city), number, stoi(additional)};
+	}
 public:
 	PhoneBook (ifstream &fl)
 	{
 		string line;
-		int cnt = 1;
+		vector<string> parts;
+
 		while (getline(fl, line)) {
-			cout << cnt << ": " << line << endl;
-			cnt++;
+			parts = splitString (line);
+			
+			Person pers = getPerson(parts[0], parts[1], parts[2]);
+			PhoneNumber number = getPhoneNumber(parts[3], parts[4], parts[5], parts[6]);
+
+			contacts.push_back(make_pair(pers, number));
 		}
 	}
+
+	friend ostream &operator<< (ostream &os, const PhoneBook &book);
 };
+
+ostream &operator<< (ostream &os, const PhoneBook &book)
+{
+	for_each(book.contacts.begin(), book.contacts.end(), [&os](const auto& contact) {
+        os << contact.first << "\t" << contact.second << "\n"; 
+    });
+
+	return os;
+}
 
 int main(int argc, char const *argv[])
 {
-	// Person p1 {"Pupkin", "Vasiliy", "Petrovich"};
-	// Person p2 {"Sidorov", "John"};
-	// Person p3 {"Ivanov", "Ivan", "Ivanovich"};
-	// Person p4 {"Pupkin", "Vasiliy", "Petrovich"};
-
-	// cout << boolalpha << (p1 < p2) << endl;
-	// cout << boolalpha << (p2 < p3) << endl;
-	// cout << boolalpha << (p1 == p2) << endl;
-	// cout << boolalpha << (p1 == p4) << endl;
-
-	// cout << p1 << endl;
-	// cout << p2 << endl;
-	// cout << p3 << endl;
-
-	// PhoneNumber ph1 {7, 17, "4559767"};
-	// PhoneNumber ph2 {4, 23, "4559767", 14};
-	// PhoneNumber ph3 {2, 12, "4559767"};
-
-	// cout << ph1 << endl;
-	// cout << ph2 << endl;
-	// cout << ph3 << endl;
-
 	ifstream file("PhoneBook.txt");
 	PhoneBook book {file};
+	cout << book;
+
+	// Остальное не пока успел :(
 
 	return 0;
 }
