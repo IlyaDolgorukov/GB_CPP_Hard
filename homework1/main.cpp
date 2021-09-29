@@ -17,8 +17,14 @@ private:
 	optional<string> middlename;
 
 public:
+	Person() : lastname(""), firstname("") {}
 	Person(string ln, string fn) : lastname(ln), firstname(fn) {}
 	Person(string ln, string fn, string mn) : lastname(ln), firstname(fn), middlename(mn) {}
+
+	bool isMatchLastName(const string &lname)
+	{
+		return lastname == lname;
+	}
 
 	friend ostream &operator<< (ostream &os, const Person &pers);
 	friend bool operator< (const Person &p1, const Person &p2);
@@ -48,6 +54,7 @@ private:
 	string number;
 	optional<int> additional;
 public:
+	PhoneNumber() : country(0), city(0), number("") {}
 	PhoneNumber(int co, int ct, string num) : country(co), city(ct), number(num) {}
 	PhoneNumber(int co, int ct, string num, int add) : country(co), city(ct), number(num), additional(add) {}
 
@@ -132,6 +139,29 @@ public:
 	    });
 	}
 
+	tuple<string, PhoneNumber> GetPhoneNumber(const string &lastname)
+	{
+		vector<PhoneNumber> result;
+		string str = "not found";
+		PhoneNumber number;
+
+		for_each(contacts.begin(), contacts.end(), [lastname, &result](auto& contact) {
+	         if (contact.first.isMatchLastName(lastname)) {
+	         	result.push_back(contact.second);
+	         }
+	    });
+
+		if (result.size() > 1) {
+			 str = "found more than 1";
+			 number = result[0];
+		} else if (result.size() > 0) {
+			str = "";
+			 number = result[0];
+		}
+
+		return make_tuple(str, number);
+	}
+
 	friend ostream &operator<< (ostream &os, const PhoneBook &book);
 };
 
@@ -157,6 +187,23 @@ int main(int argc, char const *argv[])
 	cout << "------SortByName--------" << endl;
 	book.SortByName();
 	cout << book;
+
+	cout << "-----GetPhoneNumber-----" << endl;
+	auto print_phone_number = [&book](const string &surname) { 
+		cout << surname << "\t";
+		auto answer = book.GetPhoneNumber(surname);
+		if (get<0>(answer).empty()) {
+			cout << get<1>(answer);
+			cout << endl;
+		} else {
+			cout << get<0>(answer);
+			cout << endl;
+		} 
+	};
+
+	// вызовы лямбды
+	print_phone_number("Ivanov");
+	print_phone_number("Petrov");
 
 	// Остальное пока не успел :(
 
