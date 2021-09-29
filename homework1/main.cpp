@@ -26,6 +26,11 @@ public:
 		return lastname == lname;
 	}
 
+	bool isFullMatch(const Person &pers)
+	{
+		return lastname == pers.lastname && firstname == pers.firstname && middlename == pers.middlename;
+	}
+
 	friend ostream &operator<< (ostream &os, const Person &pers);
 	friend bool operator< (const Person &p1, const Person &p2);
 	friend bool operator== (const Person &p1, const Person &p2);
@@ -146,20 +151,31 @@ public:
 		PhoneNumber number;
 
 		for_each(contacts.begin(), contacts.end(), [lastname, &result](auto& contact) {
-	         if (contact.first.isMatchLastName(lastname)) {
-	         	result.push_back(contact.second);
-	         }
+			if (contact.first.isMatchLastName(lastname)) {
+				result.push_back(contact.second);
+			}
 	    });
 
 		if (result.size() > 1) {
-			 str = "found more than 1";
-			 number = result[0];
+			str = "found more than 1";
+			number = result[0];
 		} else if (result.size() > 0) {
 			str = "";
-			 number = result[0];
+			number = result[0];
 		}
 
 		return make_tuple(str, number);
+	}
+
+	void ChangePhoneNumber(Person pers, PhoneNumber number)
+	{
+		auto result = find_if(contacts.begin(), contacts.end(), [pers](auto& contact) {
+			return contact.first.isFullMatch(pers);
+	    });
+
+	    if (result != end(contacts)) {
+			(*result).second = number;
+	    }
 	}
 
 	friend ostream &operator<< (ostream &os, const PhoneBook &book);
@@ -189,23 +205,24 @@ int main(int argc, char const *argv[])
 	cout << book;
 
 	cout << "-----GetPhoneNumber-----" << endl;
-	auto print_phone_number = [&book](const string &surname) { 
+	auto print_phone_number = [&book](const string &surname) {
 		cout << surname << "\t";
 		auto answer = book.GetPhoneNumber(surname);
 		if (get<0>(answer).empty()) {
 			cout << get<1>(answer);
-			cout << endl;
 		} else {
 			cout << get<0>(answer);
-			cout << endl;
-		} 
+		}
+		cout << endl;
 	};
 
-	// вызовы лямбды
 	print_phone_number("Ivanov");
 	print_phone_number("Petrov");
 
-	// Остальное пока не успел :(
+	cout << "----ChangePhoneNumber----" << endl;
+	book.ChangePhoneNumber(Person{"Kotov", "Vasilii", "Eliseevich"}, PhoneNumber{7, 123, "15344458"});
+	book.ChangePhoneNumber(Person{"Mironova", "Margarita", "Vladimirovna"}, PhoneNumber{16, 465, "9155448", 13});
+	cout << book;
 
 	return 0;
 }
