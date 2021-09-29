@@ -17,8 +17,8 @@ private:
 	optional<string> middlename;
 
 public:
-	Person (string ln, string fn) : lastname(ln), firstname(fn) {}
-	Person (string ln, string fn, string mn) : lastname(ln), firstname(fn), middlename(mn) {}
+	Person(string ln, string fn) : lastname(ln), firstname(fn) {}
+	Person(string ln, string fn, string mn) : lastname(ln), firstname(fn), middlename(mn) {}
 
 	friend ostream &operator<< (ostream &os, const Person &pers);
 	friend bool operator< (const Person &p1, const Person &p2);
@@ -48,8 +48,8 @@ private:
 	string number;
 	optional<int> additional;
 public:
-	PhoneNumber (int co, int ct, string num) : country(co), city(ct), number(num) {}
-	PhoneNumber (int co, int ct, string num, int add) : country(co), city(ct), number(num), additional(add) {}
+	PhoneNumber(int co, int ct, string num) : country(co), city(ct), number(num) {}
+	PhoneNumber(int co, int ct, string num, int add) : country(co), city(ct), number(num), additional(add) {}
 
 	friend ostream &operator<< (ostream &os, const PhoneNumber &phone);
 	friend bool operator< (const PhoneNumber &ph1, const PhoneNumber &ph2);
@@ -71,7 +71,7 @@ class PhoneBook
 private:
 	vector<pair<Person, PhoneNumber>> contacts;
 
-	vector<string> splitString (const string& s)
+	vector<string> splitString(const string& s)
 	{
 	    vector<string> result;
 	    size_t space_pos = 0;
@@ -103,7 +103,7 @@ private:
 			: PhoneNumber {stoi(country), stoi(city), number, stoi(additional)};
 	}
 public:
-	PhoneBook (ifstream &fl)
+	PhoneBook(ifstream &fl)
 	{
 		string line;
 		vector<string> parts;
@@ -116,6 +116,20 @@ public:
 
 			contacts.push_back(make_pair(pers, number));
 		}
+	}
+
+	void SortByName()
+	{
+		sort(contacts.begin(), contacts.end(), [](auto &contact1, auto &contact2) {
+			return contact1.first < contact2.first;
+	    });
+	}
+
+	void SortByPhone()
+	{
+		sort(contacts.begin(), contacts.end(), [](auto &contact1, auto &contact2) {
+			return contact1.second < contact2.second;
+	    });
 	}
 
 	friend ostream &operator<< (ostream &os, const PhoneBook &book);
@@ -133,10 +147,18 @@ ostream &operator<< (ostream &os, const PhoneBook &book)
 int main(int argc, char const *argv[])
 {
 	ifstream file("PhoneBook.txt");
-	PhoneBook book {file};
+	PhoneBook book(file);
 	cout << book;
 
-	// Остальное не пока успел :(
+	cout << "------SortByPhone-------" << endl;
+	book.SortByPhone();
+	cout << book;
+
+	cout << "------SortByName--------" << endl;
+	book.SortByName();
+	cout << book;
+
+	// Остальное пока не успел :(
 
 	return 0;
 }
