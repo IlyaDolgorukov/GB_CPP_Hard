@@ -7,14 +7,14 @@
 using namespace std;
 
 template <class T>
-void printList(const std::list<T>& lst) {
+void printList(const list<T>& lst) {
     for(const auto& a: lst){
-        std::cout << a << " ";
+        cout << a << " ";
     }
-    std::cout << std::endl;
+    cout << endl;
 }
 
-void addAverage(std::list<float>& lst)
+void addAverage(list<float>& lst)
 {
 	size_t cnt = 0;
 	float sum = 0;
@@ -25,6 +25,57 @@ void addAverage(std::list<float>& lst)
     float avr = sum / static_cast<float>(cnt);
     lst.push_back(avr);
 }
+
+class MyIterator
+{
+private:
+	int first, last;
+public:
+	int current;
+
+    MyIterator(int b, int e) : first(b), last(e)
+    {
+    	current = b;
+    }
+
+    friend MyIterator& operator++(MyIterator& i);
+    friend int operator*(const MyIterator& i);
+    friend bool operator!=(const MyIterator& left, const MyIterator& right);
+};
+
+MyIterator& operator++(MyIterator& i)
+{
+	i.current++;
+	return i;
+}
+
+int operator*(const MyIterator& i)
+{
+	return i.current;
+}
+
+bool operator!=(const MyIterator& left, const MyIterator& right)
+{
+	return left.current != right.last + 1;
+}
+
+class MyRange
+{
+private:
+	MyIterator iter;
+public:
+	MyRange(int b, int e) : iter({b, e}) {}
+
+	MyIterator begin() const
+	{
+		return iter;
+	}
+
+	MyIterator end() const
+	{
+		return iter;
+	}
+};
 
 int main(int argc, char const *argv[])
 {
@@ -38,10 +89,13 @@ int main(int argc, char const *argv[])
 	cout << "---------------- Task 2 ------------------" << endl;
 
 	// К сожалению, я не учился в институте и не умею вычислять определитель матрицы
+	cout << "Sorry, I'm too stupid for this..." << endl;
 
 	cout << "---------------- Task 3 ------------------" << endl;
 
-	
+	for (const int num : MyRange{10, 25}) {
+	    cout << num << " ";
+	}
 
 	return 0;
 }
